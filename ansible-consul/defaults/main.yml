@@ -1,4 +1,2 @@
 ---
 # defaults file for ansible-consul
-
-version: 1.8.3
