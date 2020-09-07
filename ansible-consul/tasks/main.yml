@@ -1,0 +1,6 @@
+---
+# tasks file for ansible-consul
+
+- name: include distribution-specific task
+  include_tasks:
+    file: "{{ ansible_distribution }}.yml"
