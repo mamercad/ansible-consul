@@ -1,6 +1,6 @@
 ---
 
-- name: install consul
+- name: Install Consul from Homebrew
   homebrew:
     state: present
     name: consul

@@ -1,12 +1,12 @@
 ---
 
-- name: install consul
+- name: Install Consul from APT
   apt:
     state: present
     name: consul
   become: yes
 
-- name: deploy consul server configuration
+- name: Deploy Consul server config
   copy:
     dest: /etc/consul.d/server.json
     content: |
@@ -26,7 +26,7 @@
   become: yes
   when: "server == 'yes'"
 
-- name: fixup /etc/default/consul
+- name: Fixup /etc/default/consul (add -bind)
   copy:
     dest: /etc/default/consul
     content: |
@@ -35,7 +35,7 @@
   notify: restart consul
   when: "server == 'yes'"
 
-- name: consul firewall ports
+- name: Allow Consul Server RPC TCP
   iptables:
     chain: INPUT
     protocol: tcp
@@ -45,7 +45,7 @@
     comment: Allow Consul Server RPC TCP
   become: yes
 
-- name: consul firewall ports
+- name: Allow Consul LAN Serf TCP
   iptables:
     chain: INPUT
     protocol: tcp
@@ -55,7 +55,7 @@
     comment: Allow Consul LAN Serf TCP
   become: yes
 
-- name: consul firewall ports
+- name: Allow Consul LAN Serf UDP
   iptables:
     chain: INPUT
     protocol: udp
@@ -64,7 +64,7 @@
     comment: Allow Consul LAN Serf UDP
   become: yes
 
-- name: consul firewall ports
+- name: Allow Consul WAN Serf TCP
   iptables:
     chain: INPUT
     protocol: tcp
@@ -74,7 +74,7 @@
     comment: Allow Consul WAN Serf TCP
   become: yes
 
-- name: consul firewall ports
+- name: Allow Consul WAN Serf UDP
   iptables:
     chain: INPUT
     protocol: udp
@@ -83,7 +83,7 @@
     comment: Allow Consul WAN Serf UDP
   become: yes
 
-- name: consul firewall ports
+- name: Allow Consul DNS HTTP
   iptables:
     chain: INPUT
     protocol: tcp
@@ -93,7 +93,7 @@
     comment: Allow Consul DNS HTTP
   become: yes
 
-- name: consul firewall ports
+- name: Allow Consul DNS TCP
   iptables:
     chain: INPUT
     protocol: tcp
@@ -103,7 +103,7 @@
     comment: Allow Consul DNS TCP
   become: yes
 
-- name: consul firewall ports
+- name: Allow Consul DNS UDP
   iptables:
     chain: INPUT
     protocol: udp
@@ -112,7 +112,7 @@
     comment: Allow Consul DNS UDP
   become: yes
 
-- name: ensure consul:consul ownership of /var/lib/consul
+- name: Ensure consul:consul ownership of /var/lib/consul
   file:
     path: /var/lib/consul
     owner: consul
@@ -120,7 +120,7 @@
     recurse: yes
   become: yes
 
-- name: start consul server
+- name: Start and enable Consul
   systemd:
     name: consul
     state: started
