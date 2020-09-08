@@ -1,0 +1,129 @@
+---
+
+- name: install consul
+  apt:
+    state: present
+    name: consul
+  become: yes
+
+- name: deploy consul server configuration
+  copy:
+    dest: /etc/consul.d/server.json
+    content: |
+      {
+        "datacenter": "{{ datacenter }}",
+        "data_dir": "/var/lib/consul",
+        "log_level": "INFO",
+        "node_name": "{{ inventory_hostname }}",
+        "server": true,
+        "telemetry": {
+          "statsite_address": "127.0.0.1:2180"
+        },
+        "retry_join": [
+          {{ cluster_nodes }}
+        ]
+      }
+  become: yes
+  when: "server == 'yes'"
+
+- name: fixup /etc/default/consul
+  copy:
+    dest: /etc/default/consul
+    content: |
+      DAEMON_ARGS="-bind={{ bind }} -data-dir=/var/lib/consul -config-dir=/etc/consul.d"
+  become: yes
+  notify: restart consul
+  when: "server == 'yes'"
+
+- name: consul firewall ports
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 8300
+    syn: match
+    jump: ACCEPT
+    comment: Allow Consul Server RPC TCP
+  become: yes
+
+- name: consul firewall ports
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 8301
+    syn: match
+    jump: ACCEPT
+    comment: Allow Consul LAN Serf TCP
+  become: yes
+
+- name: consul firewall ports
+  iptables:
+    chain: INPUT
+    protocol: udp
+    destination_port: 8301
+    jump: ACCEPT
+    comment: Allow Consul LAN Serf UDP
+  become: yes
+
+- name: consul firewall ports
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 8302
+    syn: match
+    jump: ACCEPT
+    comment: Allow Consul WAN Serf TCP
+  become: yes
+
+- name: consul firewall ports
+  iptables:
+    chain: INPUT
+    protocol: udp
+    destination_port: 8302
+    jump: ACCEPT
+    comment: Allow Consul WAN Serf UDP
+  become: yes
+
+- name: consul firewall ports
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 8500
+    syn: match
+    jump: ACCEPT
+    comment: Allow Consul DNS HTTP
+  become: yes
+
+- name: consul firewall ports
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 8600
+    syn: match
+    jump: ACCEPT
+    comment: Allow Consul DNS TCP
+  become: yes
+
+- name: consul firewall ports
+  iptables:
+    chain: INPUT
+    protocol: udp
+    destination_port: 8600
+    jump: ACCEPT
+    comment: Allow Consul DNS UDP
+  become: yes
+
+- name: ensure consul:consul ownership of /var/lib/consul
+  file:
+    path: /var/lib/consul
+    owner: consul
+    group: consul
+    recurse: yes
+  become: yes
+
+- name: start consul server
+  systemd:
+    name: consul
+    state: started
+    enabled: yes
+  become: yes
+  when: "server == 'yes'"

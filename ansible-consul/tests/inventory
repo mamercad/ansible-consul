@@ -1,2 +1,11 @@
 localhost
 
+[servers]
+node0 bind=192.168.1.128
+node1 bind=192.168.1.53
+node2 bind=192.168.1.58
+
+[servers:vars]
+datacenter=local
+server=yes
+cluster_nodes='"node0","node1","node2"'
